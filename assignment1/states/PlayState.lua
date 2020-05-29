@@ -32,11 +32,12 @@ function PlayState:update(dt)
     self.timer = self.timer + dt
 
     -- spawn a new pipe pair every second and a half
-    if self.timer > 2 then
+    ---- if self.timer > 2 then -- we will randomize this instead
+    if self.timer > math.random(2, 10) then
         -- modify the last Y coordinate we placed so pipe gaps aren't too far apart
         -- no higher than 10 pixels below the top edge of the screen,
         -- and no lower than a gap length (90 pixels) from the bottom
-        local y = math.max(-PIPE_HEIGHT + 10, 
+        local y = math.max(-PIPE_HEIGHT + 10,
             math.min(self.lastY + math.random(-20, 20), VIRTUAL_HEIGHT - 90 - PIPE_HEIGHT))
         self.lastY = y
 
@@ -98,6 +99,16 @@ function PlayState:update(dt)
         gStateMachine:change('score', {
             score = self.score
         })
+    end
+
+    -- reset if we go too high/try to go beyond the top edge (aka cheat)
+    if self.bird.y < 0 then
+      sounds['explosion']:play()
+      sounds['hurt']:play()
+
+      gStateMachine:change('score', {
+          score = self.score
+      })
     end
 end
 
