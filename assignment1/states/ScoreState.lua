@@ -53,7 +53,7 @@ local function renderMedal(medalObj)
   love.graphics.setColor(medalObj['rgb'][1], medalObj['rgb'][2], medalObj['rgb'][3])
   love.graphics.ellipse('fill', VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, 8, 8)
 
-  love.graphics.setColor(255, 255, 255)
+  love.graphics.setColor(1, 1, 1)
   love.graphics.printf(CONGRATS_MSG, 0, 160, VIRTUAL_WIDTH, 'center')
   love.graphics.setFont(flappyFont)
   love.graphics.printf(medalObj['name'], 0, 180, VIRTUAL_WIDTH, 'center')
@@ -77,7 +77,7 @@ function ScoreState:render()
     end
 
     -- love.graphics.printf('Press Enter to Play Again!', 0, 160, VIRTUAL_WIDTH, 'center')
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.setFont(smallFont)
     love.graphics.printf('Press Enter to Play Again!', 0, 240, VIRTUAL_WIDTH, 'center')
 end

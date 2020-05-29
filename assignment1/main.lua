@@ -5,9 +5,9 @@
     Author: Colton Ogden
     cogden@cs50.harvard.edu
 
-    A mobile game by Dong Nguyen that went viral in 2013, utilizing a very simple 
-    but effective gameplay mechanic of avoiding pipes indefinitely by just tapping 
-    the screen, making the player's bird avatar flap its wings and move upwards slightly. 
+    A mobile game by Dong Nguyen that went viral in 2013, utilizing a very simple
+    but effective gameplay mechanic of avoiding pipes indefinitely by just tapping
+    the screen, making the player's bird avatar flap its wings and move upwards slightly.
     A variant of popular games like "Helicopter Game" that floated around the internet
     for years prior. Illustrates some of the most basic procedural generation of game
     levels possible as by having pipes stick out of the ground by varying amounts, acting
@@ -62,10 +62,12 @@ local GROUND_SCROLL_SPEED = 60
 
 local BACKGROUND_LOOPING_POINT = 413
 
+local pause = false;
+
 function love.load()
     -- initialize our nearest-neighbor filter
     love.graphics.setDefaultFilter('nearest', 'nearest')
-    
+
     -- seed the RNG
     math.randomseed(os.time())
 
@@ -85,6 +87,7 @@ function love.load()
         ['explosion'] = love.audio.newSource('explosion.wav', 'static'),
         ['hurt'] = love.audio.newSource('hurt.wav', 'static'),
         ['score'] = love.audio.newSource('score.wav', 'static'),
+        ['pause'] = love.audio.newSource('pause.mp3', 'static'),
 
         -- https://freesound.org/people/xsgianni/sounds/388079/
         ['music'] = love.audio.newSource('marios_way.mp3', 'static')
@@ -127,6 +130,10 @@ function love.keypressed(key)
 
     if key == 'escape' then
         love.event.quit()
+    elseif key == 'p' then
+      -- pause the game if 'P' is pressed
+      pause = not pause
+      sounds['pause']:play()
     end
 end
 
@@ -154,11 +161,27 @@ function love.mouse.wasPressed(button)
 end
 
 function love.update(dt)
-    -- scroll our background and ground, looping back to 0 after a certain amount
-    backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
-    groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+    if not pause then
+      if not sounds['music']:isPlaying() then
+        love.audio.play(sounds['music'])
+      end
 
-    gStateMachine:update(dt)
+      -- scroll our background and ground, looping back to 0 after a certain amount
+      backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+      groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+
+      gStateMachine:update(dt)
+    else
+      if sounds['music']:isPlaying() then
+        love.audio.pause(sounds['music'])
+      end
+    end
+
+    -- -- scroll our background and ground, looping back to 0 after a certain amount
+    -- backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
+    -- groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+    --
+    -- gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
     love.mouse.buttonsPressed = {}
@@ -166,10 +189,18 @@ end
 
 function love.draw()
     push:start()
-    
+
     love.graphics.draw(background, -backgroundScroll, 0)
     gStateMachine:render()
     love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
-    
+
+    if pause then
+      love.graphics.setColor(0, 0, 0, .5)
+      love.graphics.rectangle('fill', 0, 0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+      love.graphics.setColor(1, 1, 1)
+      love.graphics.setFont(hugeFont)
+      love.graphics.printf('PAUSED', 0, 120, VIRTUAL_WIDTH, 'center')
+    end
+
     push:finish()
 end
